@@ -1,0 +1,8 @@
+services:
+  app:
+    image: go-api:latest
+    restart: always
+    ports:
+      - "8080:9090"
+    env_file:
+      - .env
