@@ -12,6 +12,16 @@ resource "aws_dynamodb_table" "table" {
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "pk"
   range_key    = "sk"
+
+  attribute {
+    name = "pk"
+    type = "S"
+  }
+
+  attribute {
+    name = "sk"
+    type = "S"
+  }
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
@@ -128,20 +138,20 @@ resource "aws_ecs_task_definition" "api_td" {
           name          = "http"
         }
       ]
-      environment = jsonencode([
+      environment = [
         {
-          name  = "GITHUB_TOKEN"
+          name  = "GITHUB_TOKEN",
           value = var.github_token
         },
         {
-          name  = "DDB_TABLE_NAME"
+          name  = "DDB_TABLE_NAME",
           value = var.ddb_table_name
         },
         {
-          name  = "GEMINI_APIKEY"
+          name  = "GEMINI_APIKEY",
           value = var.gemini_apikey
         }
-      ])
+      ]
     }
   ])
 }

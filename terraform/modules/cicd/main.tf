@@ -121,33 +121,29 @@ resource "aws_codepipeline" "pipeline" {
       }
     }
   }
-
-  stage {
-    name = "Deploy"
-
-    action {
-      name            = "Deploy"
-      category        = "Deploy"
-      owner           = "AWS"
-      provider        = "CloudFormation"
-      input_artifacts = ["build_output"]
-      version         = "1"
-
-      configuration = {
-        ActionMode     = "REPLACE_ON_FAILURE"
-        Capabilities   = "CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"
-        OutputFileName = "CreateStackOutput.json"
-        StackName      = "MyStack"
-        TemplatePath   = "build_output::sam-templated.yaml"
-      }
-    }
-  }
 }
 
 resource "aws_ecr_repository" "ecr" {
   name                 = "leetcode"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
+}
+
+
+resource "aws_iam_policy" "codebuild_policy" {
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "iam:PassRole",
+          "ecs:UpdateService"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
 }
 
 resource "aws_iam_role" "codebuild_role" {
@@ -167,12 +163,16 @@ resource "aws_iam_role" "codebuild_role" {
   )
 }
 
+resource "aws_iam_role_policy_attachment" "codebuild_role_attach_codepolicy" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = aws_iam_policy.codebuild_policy.arn
+}
+
 resource "aws_iam_role_policy_attachment" "codebuild_role_attach_ecr" {
   for_each = toset([
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess",
     "arn:aws:iam::aws:policy/AmazonS3FullAccess",
     "arn:aws:iam::aws:policy/CloudWatchFullAccessV2",
-    "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole"
   ])
   role       = aws_iam_role.codebuild_role.name
   policy_arn = each.value
@@ -206,11 +206,6 @@ resource "aws_codebuild_project" "api_build_project" {
     environment_variable {
       name  = "IMAGE_REPO_NAME"
       value = aws_ecr_repository.ecr.name
-    }
-
-    environment_variable {
-      name  = "ECS_CLUSTER_NAME"
-      value = var.ecs_cluster_name
     }
 
     environment_variable {
