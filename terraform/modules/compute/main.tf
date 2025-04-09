@@ -7,6 +7,13 @@ terraform {
   }
 }
 
+resource "aws_dynamodb_table" "table" {
+  name         = var.ddb_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "pk"
+  range_key    = "sk"
+}
+
 resource "aws_iam_role" "ecs_execution_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -99,6 +106,7 @@ resource "aws_ecs_task_definition" "api_td" {
   task_role_arn      = aws_iam_role.task_role.arn
   cpu                = 256
   memory             = 512
+  network_mode       = "awsvpc"
 
   runtime_platform {
     operating_system_family = "LINUX"
@@ -108,18 +116,32 @@ resource "aws_ecs_task_definition" "api_td" {
   container_definitions = jsonencode([
     {
       name      = "api-go"
-      image     = "public.ecr.aws/f9n5f1l7/dgs:latest"
+      image     = "${var.ecr_repository_url}:api"
       cpu       = 128
       memory    = 256
       essential = true
       portMappings = [
         {
           containerPort = 9090
-          hostPort      = 8080
+          hostPort      = 9090
           protocol      = "tcp"
           name          = "http"
         }
       ]
+      environment = jsonencode([
+        {
+          name  = "GITHUB_TOKEN"
+          value = var.github_token
+        },
+        {
+          name  = "DDB_TABLE_NAME"
+          value = var.ddb_table_name
+        },
+        {
+          name  = "GEMINI_APIKEY"
+          value = var.gemini_apikey
+        }
+      ])
     }
   ])
 }
@@ -128,7 +150,8 @@ resource "aws_ecs_service" "api_go_ecs_service" {
   name            = "api-go"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api_td.arn
-  desired_count   = 1
+  desired_count   = 0
+  launch_type     = "FARGATE"
 
   network_configuration {
     subnets         = var.subnet_ids
@@ -145,14 +168,74 @@ resource "aws_ecs_service" "api_go_ecs_service" {
 
   service_connect_configuration {
     enabled   = true
-    namespace = aws_service_discovery_http_namespace.namespace.id
+    namespace = aws_service_discovery_http_namespace.namespace.arn
     service {
       client_alias {
         dns_name = "api-go"
-        port     = "8080"
+        port     = 9090
       }
       discovery_name = "api-go"
       port_name      = "http"
     }
   }
 }
+
+# test with httpd
+# resource "aws_ecs_task_definition" "test_td" {
+#   family             = "test"
+#   execution_role_arn = aws_iam_role.ecs_execution_role.arn
+#   task_role_arn      = aws_iam_role.task_role.arn
+#   cpu                = 256
+#   memory             = 512
+#   network_mode       = "awsvpc"
+
+#   runtime_platform {
+#     operating_system_family = "LINUX"
+#     cpu_architecture        = "X86_64"
+#   }
+
+#   container_definitions = jsonencode([
+#     {
+#       name      = "test"
+#       image     = "httpd:2.4.63-alpine"
+#       cpu       = 128
+#       memory    = 128
+#       essential = true
+#       portMappings = [
+#         {
+#           containerPort = 80
+#           hostPort      = 80
+#           protocol      = "tcp"
+#           name          = "http"
+#         }
+#       ]
+#     }
+#   ])
+# }
+
+# resource "aws_ecs_service" "test_ecs_service" {
+#   name            = "test"
+#   cluster         = aws_ecs_cluster.main.id
+#   task_definition = aws_ecs_task_definition.test_td.arn
+#   desired_count   = 1
+#   launch_type     = "FARGATE"
+
+#   network_configuration {
+#     subnets         = var.subnet_ids
+#     security_groups = [var.sg_ecs_task_id]
+#   }
+
+#   force_new_deployment = true
+
+#   triggers = {
+#     redeployment = plantimestamp()
+#   }
+
+#   force_delete = true
+
+#   load_balancer {
+#     target_group_arn = var.target_group_arn
+#     container_name   = "test"
+#     container_port   = 80
+#   }
+# }

@@ -126,6 +126,7 @@ resource "aws_codepipeline" "pipeline" {
 resource "aws_ecr_repository" "ecr" {
   name                 = "leetcode"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
 }
 
 resource "aws_iam_role" "codebuild_role" {
