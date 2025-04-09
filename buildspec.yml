@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+      - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/${IMAGE_REPO_NAME}
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:${BUILD_TYPE} -f Dockerfile.${BUILD_TYPE} .
+      - docker tag $REPOSITORY_URI:${BUILD_TYPE} $REPOSITORY_URI:${BUILD_TYPE}-$COMMIT_HASH
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:${BUILD_TYPE}
+      - docker push $REPOSITORY_URI:${BUILD_TYPE}-$COMMIT_HASH
