@@ -53,5 +53,8 @@ module "compute" {
 }
 
 module "cicd" {
-  source = "../../modules/cicd"
+  source                  = "../../modules/cicd"
+  ecs_cluster_name        = module.compute.ecs_cluster_name
+  ecs_api_service_name    = module.compute.ecs_api_service_name
+  ecs_api_task_definition = module.compute.ecs_api_task_definition
 }

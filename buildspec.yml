@@ -20,7 +20,5 @@ phases:
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:${BUILD_TYPE}
       - docker push $REPOSITORY_URI:${BUILD_TYPE}-$COMMIT_HASH
-      - echo Writing image definitions file...
-      - printf '[{"name":"hello-world","imageUri":"%s"}]' $REPOSITORY_URI:${BUILD_TYPE}-$COMMIT_HASH > imagedefinitions.json
-artifacts:
-    files: imagedefinitions.json
+      - echo Updating ECS Service
+      - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --task-definition $TASK_DEFINITION --force-new-deployment
