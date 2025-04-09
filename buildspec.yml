@@ -12,7 +12,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:${BUILD_TYPE} -f Dockerfile.${BUILD_TYPE} .
+      - docker build -t $REPOSITORY_URI:${BUILD_TYPE} -f ${BUILD_TYPE}.Dockerfile .
       - docker tag $REPOSITORY_URI:${BUILD_TYPE} $REPOSITORY_URI:${BUILD_TYPE}-$COMMIT_HASH
   post_build:
     commands:
