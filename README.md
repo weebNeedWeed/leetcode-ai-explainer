@@ -2,6 +2,26 @@
 
 LeetCode AI Explainer is a web application that provides AI-generated explanations for LeetCode problem solutions. The system retrieves problem solutions from a GitHub repository, generates detailed explanations using the Gemini AI model, and displays them in an easy-to-understand format.
 
+#### Cloud diagram:
+
+![Cloud](./images/cloud.drawio.png)
+
+1. User accesses the application via a domain managed by Amazon Route 53.
+2. The request routes through an Internet Gateway and reaches the Application Load Balancer (ALB).
+3. The ALB directs traffic to the React frontend service running on an ECS cluster in private subnets (1 per AZ).
+4. The React service makes internal calls to the API service, using Service Connect for communication.
+5. The ECS cluster accesses external services like Gemini and GitHub through a NAT Gateway in a public subnet.
+
+#### CI/CD Workflow with CodeFamily:
+
+![CICD](./images/cicd.drawio.png)
+
+1. Developer pushes code changes to a GitHub repository.
+2. This triggers AWS CodePipeline, which orchestrates the workflow.
+3. CodePipeline stores and retrieves build artifacts from an S3 artifacts bucket.
+4. AWS CodeBuild builds the application, creates a Docker image, and pushes it to the Container Registry.
+5. Once the image is available, CodeBuild run `update-service` command to make ECS Cluster pulls new image and updates the service automatically.
+
 ## Features
 
 - Fetch LeetCode problem solutions by ID
