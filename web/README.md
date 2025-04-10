@@ -1,12 +1,72 @@
-# React + Vite
+# LeetCode AI Explainer Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend for the LeetCode AI Explainer project, built with React and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Clean, responsive user interface
+- Problem solution display with syntax highlighting
+- Loading states and error handling
+- Integration with the Go API backend
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React 19
+- Tailwind CSS 4.1
+- Vite build system
+- Nginx for serving in production
+
+## Project Structure
+
+```
+web/
+├── public/              # Static assets
+├── src/                 # Source code
+│   ├── components/      # React components
+│   ├── services/        # API service integration
+│   ├── App.jsx          # Main application component
+│   └── main.jsx         # Application entry point
+├── index.html           # HTML template
+├── package.json         # Dependencies and scripts
+├── vite.config.js       # Vite configuration
+├── tailwind.config.js   # Tailwind CSS configuration
+├── nginx.conf           # Nginx configuration for production
+└── eslint.config.js     # ESLint configuration
+```
+
+## Development
+
+### Prerequisites
+
+- Node.js 22+
+- npm 10+
+
+### Setup
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+3. The app will be available at http://localhost:5173 with hot-reload enabled.
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+This will create optimized files in the `dist` directory that can be served by Nginx.
+
+## Integration with Backend
+
+The frontend communicates with the Go API backend through the `/api` endpoint. In development mode, API requests are proxied to the backend server running at http://localhost:9090.
+
+## Styling
+
+The project uses Tailwind CSS with custom theming defined in `tailwind.config.js` and extended in `main.css`.
