@@ -160,7 +160,7 @@ resource "aws_ecs_service" "api_go_ecs_service" {
   name            = "api-go"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api_td.arn
-  desired_count   = 0
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -190,62 +190,61 @@ resource "aws_ecs_service" "api_go_ecs_service" {
   }
 }
 
-# test with httpd
-# resource "aws_ecs_task_definition" "test_td" {
-#   family             = "test"
-#   execution_role_arn = aws_iam_role.ecs_execution_role.arn
-#   task_role_arn      = aws_iam_role.task_role.arn
-#   cpu                = 256
-#   memory             = 512
-#   network_mode       = "awsvpc"
+resource "aws_ecs_task_definition" "react_td" {
+  family             = "react"
+  execution_role_arn = aws_iam_role.ecs_execution_role.arn
+  task_role_arn      = aws_iam_role.task_role.arn
+  cpu                = 256
+  memory             = 512
+  network_mode       = "awsvpc"
 
-#   runtime_platform {
-#     operating_system_family = "LINUX"
-#     cpu_architecture        = "X86_64"
-#   }
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
 
-#   container_definitions = jsonencode([
-#     {
-#       name      = "test"
-#       image     = "httpd:2.4.63-alpine"
-#       cpu       = 128
-#       memory    = 128
-#       essential = true
-#       portMappings = [
-#         {
-#           containerPort = 80
-#           hostPort      = 80
-#           protocol      = "tcp"
-#           name          = "http"
-#         }
-#       ]
-#     }
-#   ])
-# }
+  container_definitions = jsonencode([
+    {
+      name      = "react"
+      image     = "${var.ecr_repository_url}:react"
+      cpu       = 128
+      memory    = 128
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+          protocol      = "tcp"
+          name          = "http"
+        }
+      ]
+    }
+  ])
+}
 
-# resource "aws_ecs_service" "test_ecs_service" {
-#   name            = "test"
-#   cluster         = aws_ecs_cluster.main.id
-#   task_definition = aws_ecs_task_definition.test_td.arn
-#   desired_count   = 1
-#   launch_type     = "FARGATE"
+resource "aws_ecs_service" "react_ecs_service" {
+  name            = "react"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.react_td.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
 
-#   network_configuration {
-#     subnets         = var.subnet_ids
-#     security_groups = [var.sg_ecs_task_id]
-#   }
+  network_configuration {
+    subnets         = var.subnet_ids
+    security_groups = [var.sg_ecs_task_id]
+  }
 
-#   force_new_deployment = true
+  force_new_deployment = true
 
-#   triggers = {
-#     redeployment = plantimestamp()
-#   }
+  triggers = {
+    redeployment = plantimestamp()
+  }
 
-#   force_delete = true
+  force_delete = true
 
-#   load_balancer {
-#     target_group_arn = var.target_group_arn
-#     container_name   = "test"
-#     container_port   = 80
-#   }
-# }
+  load_balancer {
+    target_group_arn = var.target_group_arn
+    container_name   = "react"
+    container_port   = 80
+  }
+}

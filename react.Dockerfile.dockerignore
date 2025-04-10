@@ -1,0 +1,42 @@
+# Node.js dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build outputs
+build
+dist
+.next
+out
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Development tools
+/.git
+/.github
+/.vscode
+/.idea
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# Testing
+/coverage
+/.nyc_output
+/cypress/videos
+/cypress/screenshots
+
+# Misc
+.cache
+.eslintcache
+README.md
+LICENSE
+*.log

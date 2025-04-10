@@ -1,8 +1,23 @@
 services:
-  app:
+  api-go:
     image: go-api:latest
     restart: always
     ports:
-      - "8080:9090"
+      - "9090:9090"
     env_file:
       - .env
+    networks:
+      - defaultnw
+  react:
+    image: react:latest
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - api-go
+    networks:
+      - defaultnw
+
+networks:
+  defaultnw:
+    driver: bridge

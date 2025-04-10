@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-poppins: Poppins, sans-serif;
+  
+  /* Colors */
+  --color-primary: #FFFFFF;
+  --color-secondary: #F1F3F5;
+  --color-text-primary: #212529;
+  --color-text-secondary: #6C757D;
+  --color-accent: #4dabf7;
+  
+  /* Spacing */
+  --spacing-72: 18rem;
+  --spacing-84: 21rem;
+  --spacing-96: 24rem;
+  
+  /* Max Width */
+  --max-width-content: 1200px;
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+}
+
+@layer base {
+  html {
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  }
+  body {
+    @apply bg-primary text-text-primary;
+    line-height: 1.6;
+  }
+}
+
+@layer components {
+  .prose {
+    @apply text-text-primary;
+  }
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    @apply font-medium text-text-primary my-4;
+  }
+  .prose h3 {
+    @apply text-xl;
+  }
+  .prose h4 {
+    @apply text-lg;
+  }
+  .prose p {
+    @apply my-3;
+  }
+  .prose pre {
+    @apply bg-secondary p-4 rounded-sm my-4 overflow-x-auto;
+    color: #333333; /* Darker text color for better contrast */
+  }
+  .prose code {
+    @apply font-mono text-sm;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+  }
+  /* Prevent double styling for code inside pre */
+  .prose pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+  /* Fix for strong tags inside pre blocks */
+  .prose pre strong {
+    font-weight: inherit;
+    color: #fff !important; /* White color for strong tags inside pre */
+  }
+}

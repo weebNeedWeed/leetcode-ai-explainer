@@ -77,7 +77,8 @@ resource "aws_codestarconnections_connection" "github_connection" {
 }
 
 resource "aws_codepipeline" "pipeline" {
-  name     = "deploy-pipeline"
+  count    = 2 # for react and api-go
+  name     = "deploy-pipeline-${count.index}"
   role_arn = aws_iam_role.codepipeline.arn
 
   artifact_store {
@@ -117,7 +118,7 @@ resource "aws_codepipeline" "pipeline" {
       version          = "1"
 
       configuration = {
-        ProjectName = aws_codebuild_project.api_build_project.name
+        ProjectName = count.index == 0 ? aws_codebuild_project.api_build_project.name : aws_codebuild_project.react_build_project.name
       }
     }
   }
@@ -128,7 +129,6 @@ resource "aws_ecr_repository" "ecr" {
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 }
-
 
 resource "aws_iam_policy" "codebuild_policy" {
   policy = jsonencode({
@@ -179,7 +179,7 @@ resource "aws_iam_role_policy_attachment" "codebuild_role_attach_ecr" {
 }
 
 resource "aws_codebuild_project" "api_build_project" {
-  name          = "leetcode-build-project"
+  name          = "leetcode-api-build-project"
   build_timeout = 5
   service_role  = aws_iam_role.codebuild_role.arn
 
@@ -221,6 +221,59 @@ resource "aws_codebuild_project" "api_build_project" {
     environment_variable {
       name  = "TASK_DEFINITION"
       value = var.ecs_api_task_definition
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "buildspec.yml"
+  }
+}
+
+
+resource "aws_codebuild_project" "react_build_project" {
+  name          = "leetcode-react-build-project"
+  build_timeout = 5
+  service_role  = aws_iam_role.codebuild_role.arn
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_MEDIUM"
+    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+
+    environment_variable {
+      name  = "AWS_ACCOUNT_ID"
+      value = local.account_id
+    }
+
+    environment_variable {
+      name  = "BUILD_TYPE"
+      value = "react"
+    }
+
+    environment_variable {
+      name  = "IMAGE_REPO_NAME"
+      value = aws_ecr_repository.ecr.name
+    }
+
+    environment_variable {
+      name  = "ECS_CLUSTER_NAME"
+      value = var.ecs_cluster_name
+    }
+
+    environment_variable {
+      name  = "ECS_SERVICE_NAME"
+      value = var.ecs_react_service_name
+    }
+
+    environment_variable {
+      name  = "TASK_DEFINITION"
+      value = var.ecs_react_task_definition
     }
   }
 
