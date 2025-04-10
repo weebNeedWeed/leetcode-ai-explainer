@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="flex flex-row md:flex-row justify-center items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-text-secondary text-sm">
-              &copy; {new Date().getFullYear()} LeetCode AI Explainer. All
+              &copy; {new Date().getFullYear()} LeetCode AI Explainer 2025. All
               rights reserved.
             </p>
           </div>

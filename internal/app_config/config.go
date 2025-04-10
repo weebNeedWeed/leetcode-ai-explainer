@@ -18,7 +18,7 @@ var Config = getConfig()
 func getConfig() Configuration {
 	c := Configuration{}
 
-	c.Addr = env.GetString("ADDR", ":9009")
+	c.Addr = env.GetString("ADDR", ":9090")
 	if c.Addr == "" {
 		log.Fatalf("no addr found")
 	}

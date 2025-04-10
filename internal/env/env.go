@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	godotenv.Load()
+	godotenv.Overload("./env")
 }
 
 func GetString(key, fallback string) string {

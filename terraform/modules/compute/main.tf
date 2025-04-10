@@ -240,6 +240,11 @@ resource "aws_ecs_service" "react_ecs_service" {
     redeployment = plantimestamp()
   }
 
+  service_connect_configuration {
+    enabled   = true
+    namespace = aws_service_discovery_http_namespace.namespace.arn
+  }
+
   force_delete = true
 
   load_balancer {
